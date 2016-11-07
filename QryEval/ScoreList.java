@@ -29,6 +29,18 @@ public class ScoreList {
 	ex.printStackTrace();
       }
     }
+    
+    private ScoreListEntry(String externalDocid, double score) {
+    	this.externalId = externalDocid;
+        this.score = score;
+
+        try {
+        	this.docid = Idx.getInternalDocid (this.externalId);
+        }
+        catch (Exception ex){
+        	ex.printStackTrace();
+        }
+    }
   }
 
   /**
@@ -44,7 +56,16 @@ public class ScoreList {
   public void add(int docid, double score) {
     scores.add(new ScoreListEntry(docid, score));
   }
-
+  
+  /**
+   *  Append a document score to a score list.
+   *  @param docid An "external" document id.
+   *  @param score The document's score.
+   */
+  public void addExt(String externaldocid, double score) {
+    scores.add(new ScoreListEntry(externaldocid, score));
+  }
+  
   /**
    *  Get the internal docid of the n'th entry.
    *  @param n The index of the requested document.

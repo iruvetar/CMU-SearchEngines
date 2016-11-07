@@ -143,9 +143,9 @@ public class QryEval {
    * @param initialRankFilePath
    * @param SVMScoreFilePath
    * @param outputFilePath
- * @throws Exception 
+ * @throws IOException 
    */
-  private static void rerank(String queryPath, String initialRankFilePath, String SVMScoreFilePath, String outputFilePath) throws Exception {
+  private static void rerank(String queryPath, String initialRankFilePath, String SVMScoreFilePath, String outputFilePath) throws IOException {
 	  BufferedReader initialRanking = null;
 	  BufferedReader SVMscore = null;
 //	  BufferedReader queryInput = null;
@@ -186,7 +186,7 @@ public class QryEval {
 	  }
   }
   
-  private static ScoreList partialRerank (int size, BufferedReader documentReader, BufferedReader scoreReader) throws Exception {
+  private static ScoreList partialRerank (int size, BufferedReader documentReader, BufferedReader scoreReader) throws IOException {
 	  ScoreList r = new ScoreList();
 	  for (int i = 0; i < size; i ++) {
 		  String docFeatureVector = documentReader.readLine();
@@ -196,7 +196,7 @@ public class QryEval {
 		  String scoreinput = scoreReader.readLine();
 		  String[] scorearray = scoreinput.split("\\s+");
 		  double score = Double.parseDouble(scorearray[0]);
-		  r.add(Idx.getInternalDocid(externalid), score);
+		  r.addExt(externalid, score);
 	  }
 	  return r;
   }
@@ -520,7 +520,7 @@ public class QryEval {
 		        	  double[] featureVector = new double[18];
 		        	  int internalid = 0;
 		        	  try {
-		        		  internalid = Idx.getInternalDocid(relJudgeInput[2]);  
+		        		  internalid = Idx.getInternalDocid(relJudgeInput[2]);
 		        		  collectionRelScore.add(relevanceNormalize(Integer.parseInt(relJudgeInput[3])));
 			        	  collectionIntDocid.add(internalid);
 			        	  collectionExtDocid.add(relJudgeInput[2]);
@@ -546,12 +546,12 @@ public class QryEval {
 				        	//As you can see in the test cases, it is OK to leave out features. flag it as having no value for feature (not 0)
 				        	
 				        	collectionFeatureVector.add(featureVector);
-
+				        	relevanceJudge.mark(0);
 		        	  } catch (Exception e) {
 //		        		  System.out.println("Error happened during feature collection when qid = " + qid + ", input docid = " + relJudgeInput[2]);
+//		        		  System.out.println(e.getStackTrace());
+//		        		  System.out.println(e.getMessage());
 		        	  }
-		        	  
-		          	relevanceJudge.mark(0);
 		          } else if (Integer.parseInt(qid) > Integer.parseInt(relJudgeInput[0])){
 		        	  //leave a mark and continue the while loop
 		        	  relevanceJudge.mark(0);
@@ -561,7 +561,8 @@ public class QryEval {
 		          }
 		        }
 		        //the training data has been processed.
-		        
+			       
+
 		        //-------- Normalization of Feature Vectors and write feature value-----------
 		        for (int i = 0; i < collectionFeatureVector.size(); i++) {
 		        	double[] fv = collectionFeatureVector.get(i);
@@ -894,10 +895,10 @@ public class QryEval {
 		  //process the pagerank file
 		  BufferedReader input = null;
 		  String filePath = parameters.get("letor:pageRankFile");
-		  String actualPath = filePath + ".txt";
+//		  String actualPath = filePath + ".txt";
 		  try {
 		      String qLine = null;
-		      input = new BufferedReader(new FileReader(actualPath));
+		      input = new BufferedReader(new FileReader(filePath));
 
 		      //  Each pass of the loop processes one line.
 		      while ((qLine = input.readLine()) != null) {
